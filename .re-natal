@@ -1,0 +1,17 @@
+{
+  "name": "firefly",
+  "interface": "reagent6",
+  "androidHost": "10.0.2.2",
+  "iosHost": "localhost",
+  "envRoots": {
+    "dev": "env/dev",
+    "prod": "env/prod"
+  },
+  "modules": [
+    "react-navigation",
+    "react-navigation"
+  ],
+  "imageDirs": [
+    "images"
+  ]
+}
