@@ -70,12 +70,63 @@
       [text {:style (style :button-text)} "back to index"]]]))
 
 
+(def name-of-liab (reagent.ratom/atom ""))
+(def price-of-liab (reagent.ratom/atom ""))
+
+(defn liabs [props]
+  (let [name (-> props (get "params") (get "name"))
+        list-of-liabs (subscribe [:list-liabs])
+        route-name "Index"]
+    [view {:style {:align-items      "center"
+                   :justify-content  "center"
+                   :flex             1
+                   :background-color "#444444"}}
+     [view {:style {:background-color "rgba(256,256,256,0.5)"
+                    :margin-bottom    20}}
+      [text {:style (style :title)} "add liab: " @name-of-liab "\nwith price: " @price-of-liab]]
+     [input {:style {:padding-left 10
+                     :font-size 16
+                     :border-width 2
+                     :border-color "rgba(0,0,0,0.4)"
+                     :border-radius 6}
+             :height 40
+             :auto-correct true
+             :maxLength 32
+             :clear-button-mode "always"
+             :returnKeyType "go"
+             :placeholder "name of liab"
+             :on-change-text (fn [value]
+                               (let [_ (println "name is:" value @name-of-liab)])
+                               (reset! name-of-liab value)
+                               (r/flush))}]
+     [input {:style {:padding-left 10
+                     :font-size 16
+                     :border-width 2
+                     :border-color "rgba(0,0,0,0.4)"
+                     :border-radius 6}
+             :height 40
+             :auto-correct true
+             :maxLength 32
+             :clear-button-mode "always"
+             :returnKeyType "go"
+             :placeholder "price. fails unless you type [0-9]*"
+             :on-change-text (fn [value]
+                               (let [_ (println "price is" value @price-of-liab)])
+                               (reset! price-of-liab value)
+                               (r/flush))}]
+     [touchable-highlight {:on-press #(dispatch [:nav/reset route-name])
+                           :style    (style :button)}
+      [text {:style (style :button-text)} "back to index"]]
+     [touchable-highlight {:on-press #(dispatch [:add-liab {:fin.stuff/name @name-of-liab :fin.stuff/liab @price-of-liab}])
+                           :style    (style :button)}
+      [text {:style (style :button-text)} "add to db"]]
+     [view [text "having fun" @list-of-liabs]]]))
+
 (def name-of-asset (reagent.ratom/atom ""))
 (def price-of-asset (reagent.ratom/atom ""))
 
 (defn assets [props]
   (let [name (-> props (get "params") (get "name"))
-        my-asset (subscribe [:fin.stuff/asset])
         list-of-assets (subscribe [:list-assets])
         route-name "Index"]
     [view {:style {:align-items      "center"
@@ -169,6 +220,14 @@
                          :on-press #(dispatch
                                      [:nav/navigate
                                       [#:nav.route {:key       :0
+                                                    :routeName :Liabs
+                                                    :params    {:name "m"}}
+                                       "Index"]])}
+    [text {:style (style :button-text)} "liabs"]]
+   [touchable-highlight {:style    (style :button)
+                         :on-press #(dispatch
+                                     [:nav/navigate
+                                      [#:nav.route {:key       :0
                                                     :routeName :DbState
                                                     :params    {:name "m"}}
                                        "Index"]])}
@@ -192,6 +251,9 @@
 (def assets-comp (nav-wrapper assets #(str "Inserting assets screen "
                                        (aget % "state" "params" "number"))))
 
+(def liabs-comp (nav-wrapper liabs #(str "Inserting liabs screen "
+                                           (aget % "state" "params" "number"))))
+
 (def settings-comp (nav-wrapper settings #(str "The Settings ")))
 
 (def app-root-comp (nav-wrapper app-root "Welcome"))
@@ -200,6 +262,7 @@
                    :Card {:screen resd-comp}
                    :DbState {:screen db-state-comp}
                    :Assets {:screen assets-comp}
+                   :Liabs {:screen liabs-comp}
                    :Settings {:screen settings-comp}})
 
 

@@ -18,6 +18,11 @@
    (get-in db [:fin/stuff :fin.stuff/asset])))
 
 (reg-sub
+ :list-liabs
+ (fn [db _]
+   (str (filter #(contains? % :fin.stuff/liab) (:fin/stuff db)))))
+
+(reg-sub
  :get-db-state
  (fn [db _]
    (str db #_(get-in db [:fin/stuff]))))
@@ -25,7 +30,7 @@
 (reg-sub
  :list-assets
  (fn [db _]
-   (str (:fin/stuff db))))
+   (str (filter #(contains? % :fin.stuff/asset) (:fin/stuff db)))))
 
 (reg-sub
  :get-greeting

@@ -17,7 +17,7 @@
 (s/def :matt/matt string?)
 (s/def :fin.stuff/asset integer?)
 (s/def :fin.stuff/liab integer?)
-(s/def :fin.stuff/item (s/keys :req [:fin.stuff/asset :fin.stuff/name]))
+(s/def :fin.stuff/item (s/keys :req [(or :fin.stuff/liab :fin.stuff/asset) :fin.stuff/name]))
 (s/def :fin/stuff (s/coll-of :fin.stuff/item))
 
 (s/def ::app-db
@@ -29,6 +29,6 @@
                                                    #:nav.route{:key :SettingsKey :routeName :Settings}]}
              :nav/stack-state #:nav.routeName {:Index #:nav.state {:index  0
                                                                    :routes [#:nav.route {:key :Home :routeName :Home}]}}
-             :fin/stuff [{:fin.stuff/asset 5000 :fin.stuff/name "cash"} {:fin.stuff/asset 100000 :fin.stuff/name "house"}]})
+             :fin/stuff [{:fin.stuff/liab 20000 :fin.stuff/name "car loan"} {:fin.stuff/asset 5000 :fin.stuff/name "cash"} {:fin.stuff/asset 100000 :fin.stuff/name "house"}]})
 
 
