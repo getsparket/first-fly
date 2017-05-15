@@ -65,4 +65,5 @@ target/
 #
 figwheel_server.log
 
+.cljs_rhino_repl
 .nrepl-port
