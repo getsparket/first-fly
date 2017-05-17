@@ -29,9 +29,13 @@
   (let [monthly-payment (/ payment 12)]
     (assoc loan :amount (- amount monthly-payment))))
 
+(defn remove-paid-off [loans]
+  (remove #(>= 0 (:amount %)) loans))
+
 (defn advance-bad [{:keys [loans] :as bad}]
   (let [with-payments (map apply-payments loans)
-        n-loans (map adv with-payments)]
+        without-paid (remove-paid-off with-payments)
+        n-loans (map adv without-paid)]
     (assoc bad :loans n-loans)))
 
 (defn advance-a-month [g b]
