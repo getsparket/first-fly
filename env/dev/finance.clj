@@ -12,6 +12,13 @@
                         {:name "clothing" :payment 2400}
                         {:name "electric bill" :payment 1200}]})
 
+(def special-months [{:name "scion XB" :amount -3000}
+                     0
+                     0
+                     0
+                     0
+                     {:name "bank error in your favor" :amount 75}])
+
 (defn calculate-surplus [{:keys [incomes cash] :as g} {:keys [loans consumables] :as b}]
   (let [monthly-income (/ (reduce + (map :income incomes)) 12)
         monthly-expenses (/ (reduce + (concat (map :payment loans) (map :payment consumables))) 12)] ;; TODO calculate cash income
@@ -38,8 +45,15 @@
         n-loans (map adv without-paid)]
     (assoc bad :loans n-loans)))
 
-(defn advance-a-month [g b]
+(defn advance-a-month [[g b]]
   (let [surplus (calculate-surplus g b)
         n-good (advance-good g surplus)
         n-bad (advance-bad b)]
-    (cons [g b] (lazy-seq (advance-a-month n-good n-bad)))))
+    [n-good n-bad]))
+
+(defn with-specials [s [g b]]
+  (cons [g b] (lazy-seq (with-specials (rest s) (advance-a-month [(apply-special-to-good g (first s)) b])))))
+
+(defn apply-special-to-good [{:keys [cash] :as g} {:keys [amount] :or {amount 0} :as thing}]
+  (let [n-cash (assoc cash :amount (+ (:amount cash) amount))]
+    (assoc-in g [:cash] n-cash)))
