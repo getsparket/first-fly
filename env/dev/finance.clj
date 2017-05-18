@@ -12,6 +12,12 @@
                         {:name "clothing" :payment 2400}
                         {:name "electric bill" :payment 1200}]})
 
+(defn get-expenses [{:keys [loans consumables] :as b}]
+  (reduce + (concat (map :payment loans) (map :payment consumables))))
+
+(defn get-net-worth [{:keys [cash assets] :as g}]
+  (reduce + (cons (:amount cash) (map :amount assets))))
+
 (def special-months [{:name "scion XB" :amount -3000}
                      0
                      0
