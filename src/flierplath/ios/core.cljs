@@ -51,10 +51,7 @@
 
 (defn db-state [props]
   (let [something (subscribe [:get-db-state])]
-    [view {:style {:align-items      "center"
-                   :justify-content  "center"
-                   :flex             1
-                   :background-color "#444444"}}
+    [view {:style (:page style)}
      [view {:style {:background-color "rgba(256,256,256,0.5)"
                     :margin-bottom    20}}
       [text {:style (style :title)} "db state: " @something]]
