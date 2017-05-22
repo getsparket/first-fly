@@ -31,7 +31,11 @@
                  :border-radius    5}
    :button-text {:color       "white"
                  :text-align  "center"
-                 :font-weight "bold"}})
+                 :font-weight "bold"}
+   :page  {:align-items      "center"
+           :justify-content  "center"
+           :flex             1
+           :background-color "#444444"}})
 
 (def textinput-props {:style {:padding-left 10
                               :font-size 16
@@ -61,10 +65,7 @@
 (defn resd [props]
   (let [number (-> props (get "params") (get "number"))
         route-name "Index"]
-    [view {:style {:align-items      "center"
-                   :justify-content  "center"
-                   :flex             1
-                   :background-color "#444444"}}
+    [view {:style (:page style)}
      [view {:style {:background-color "rgba(256,256,256,0.5)"
                     :margin-bottom    20}}
       [text {:style (style :title)} "Number: " number]]
@@ -88,15 +89,11 @@
   (let [name (-> props (get "params") (get "name"))
         list-of-liabs (subscribe [:list-liabs])
         route-name "Index"]
-    [view {:style {:align-items      "center"
-                   :justify-content  "center"
-                   :flex             1
-                   :background-color "#444444"}}
+    [view {:style (:page style)}
      [view {:style {:background-color "rgba(256,256,256,0.5)"
                     :margin-bottom    20}}
-      [text {:style (style :title)} "add liab: " @name-of-liab "\nwith price: " @price-of-liab]]
+      [text {:style (style :title)} "add liab: "  @name-of-liab "\nwith price: " @price-of-liab]]
      [input (assoc textinput-props
-                   :placeholder "name of liab"
                    :on-change-text (fn [value]
                                      (let [_ (println "name is:" value @name-of-liab)])
                                      (reset! name-of-liab value)
@@ -113,19 +110,15 @@
      [touchable-highlight {:on-press #(dispatch [:add-liab {:fin.stuff/name @name-of-liab :fin.stuff/liab @price-of-liab}])
                            :style    (style :button)}
       [text {:style (style :button-text)} "add to db"]]
-     [view [text "having fun" @list-of-liabs]]]))
+     [view [text "liabilities: " @list-of-liabs]]]))
 
 (def name-of-asset (reagent.ratom/atom ""))
 (def price-of-asset (reagent.ratom/atom ""))
-
 (defn assets [props]
   (let [name (-> props (get "params") (get "name"))
         list-of-assets (subscribe [:list-assets])
         route-name "Index"]
-    [view {:style {:align-items      "center"
-                   :justify-content  "center"
-                   :flex             1
-                   :background-color "#444444"}}
+    [view {:style (:page style)}
      [view {:style {:background-color "rgba(256,256,256,0.5)"
                     :margin-bottom    20}}
       [text {:style (style :title)} "add asset: " @name-of-asset "\nwith price: " @price-of-asset]]
@@ -147,7 +140,7 @@
      [touchable-highlight {:on-press #(dispatch [:add-asset {:fin.stuff/name @name-of-asset :fin.stuff/asset @price-of-asset}])
                            :style    (style :button)}
       [text {:style (style :button-text)} "add to db"]]
-     [view [text "having fun" @list-of-assets]]]))
+     [view [text "assets:  " @list-of-assets]]]))
 
 (defn settings []
   [view {:style {:flex 1
@@ -158,11 +151,7 @@
 
 
 (defn app-root [{:keys [navigation]}]
-  [view {:style {:flex-direction   "column"
-                 :flex             1
-                 :padding          40
-                 :align-items      "center"
-                 :background-color "#444444"}}
+  [view {:style  (:page style)}
    [text {:style (style :title)} "flierplath"]
    [touchable-highlight {:style    (style :button)
                          :on-press #(dispatch
