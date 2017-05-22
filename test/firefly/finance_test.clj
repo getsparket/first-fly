@@ -20,20 +20,15 @@
 
 (def special-months [{:name "scion XB" :amount -3000} 0 0 0 0 {:name "bank error in your favor" :amount 75}])
 
-#_(deftest removes-paid-off-loans
+(deftest removes-paid-off-loans
   (testing "should blah"
     (let [loans (:loans bad)]
-      (is (not (contains?))))))
+      (is (= 1 1 )))))
 
 (deftest having-fun
   (testing "testing the test framework"
     (let [two 2]
       (is (= two 2)))))
-
-#_(deftest advances-a-month
-  (testing "given blah, does blah"
-    (let [some "shizz"]
-      (= n ))))
 
 (deftest when-retire?
   (testing "all the math is roughly right"
