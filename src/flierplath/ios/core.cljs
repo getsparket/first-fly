@@ -33,6 +33,18 @@
                  :text-align  "center"
                  :font-weight "bold"}})
 
+(def textinput-props {:style {:padding-left 10
+                              :font-size 16
+                              :border-width 2
+                              :border-color "rgba(0,0,0,0.4)"
+                              :border-radius 6}
+                      :height 40
+                      :auto-correct true
+                      :maxLength 32
+                      :clear-button-mode "always"
+                      :returnKeyType "go"
+                      })
+
 (defn db-state [props]
   (let [something (subscribe [:get-db-state])]
     [view {:style {:align-items      "center"
@@ -72,7 +84,6 @@
 
 (def name-of-liab (reagent.ratom/atom ""))
 (def price-of-liab (reagent.ratom/atom ""))
-
 (defn liabs [props]
   (let [name (-> props (get "params") (get "name"))
         list-of-liabs (subscribe [:list-liabs])
@@ -84,36 +95,18 @@
      [view {:style {:background-color "rgba(256,256,256,0.5)"
                     :margin-bottom    20}}
       [text {:style (style :title)} "add liab: " @name-of-liab "\nwith price: " @price-of-liab]]
-     [input {:style {:padding-left 10
-                     :font-size 16
-                     :border-width 2
-                     :border-color "rgba(0,0,0,0.4)"
-                     :border-radius 6}
-             :height 40
-             :auto-correct true
-             :maxLength 32
-             :clear-button-mode "always"
-             :returnKeyType "go"
-             :placeholder "name of liab"
-             :on-change-text (fn [value]
-                               (let [_ (println "name is:" value @name-of-liab)])
-                               (reset! name-of-liab value)
-                               (r/flush))}]
-     [input {:style {:padding-left 10
-                     :font-size 16
-                     :border-width 2
-                     :border-color "rgba(0,0,0,0.4)"
-                     :border-radius 6}
-             :height 40
-             :auto-correct true
-             :maxLength 32
-             :clear-button-mode "always"
-             :returnKeyType "go"
-             :placeholder "price. fails unless you type [0-9]*"
-             :on-change-text (fn [value]
-                               (let [_ (println "price is" value @price-of-liab)])
-                               (reset! price-of-liab value)
-                               (r/flush))}]
+     [input (assoc textinput-props
+                   :placeholder "name of liab"
+                   :on-change-text (fn [value]
+                                     (let [_ (println "name is:" value @name-of-liab)])
+                                     (reset! name-of-liab value)
+                                     (r/flush)))]
+     [input (assoc textinput-props
+                   :placeholder "price. fails unless you type [0-9]*"
+                   :on-change-text (fn [value]
+                                     (let [_ (println "price is" value @price-of-liab)])
+                                     (reset! price-of-liab value)
+                                     (r/flush)))]
      [touchable-highlight {:on-press #(dispatch [:nav/reset route-name])
                            :style    (style :button)}
       [text {:style (style :button-text)} "back to index"]]
@@ -136,39 +129,18 @@
      [view {:style {:background-color "rgba(256,256,256,0.5)"
                     :margin-bottom    20}}
       [text {:style (style :title)} "add asset: " @name-of-asset "\nwith price: " @price-of-asset]]
-     [input {:style {:padding-left 10
-                     :font-size 16
-                     :border-width 2
-                     :border-color "rgba(0,0,0,0.4)"
-                     :border-radius 6}
-             :height 40
-             :auto-correct true
-             :maxLength 32
-             :clear-button-mode "always"
-             :returnKeyType "go"
-             :placeholder "name of asset"
-             :on-change-text (fn [value]
-                               (let [_ (println "name is:" value @name-of-asset)])
-                               (reset! name-of-asset value)
-                               (r/flush))}]
-     [input {:style {:padding-left 10
-                     :font-size 16
-                     :border-width 2
-                     :border-color "rgba(0,0,0,0.4)"
-                     :border-radius 6}
-             :height 40
-             :auto-correct true
-             :maxLength 32
-             :clear-button-mode "always"
-             :returnKeyType "go"
-             :placeholder "price. fails unless you type [0-9]*"
-             :on-change-text (fn [value]
-                               (let [_ (println "price is" value @price-of-asset)])
-                               (reset! price-of-asset value)
-                               (r/flush))}]
-
-
-
+     [input (assoc textinput-props
+                   :placeholder "name of asset"
+                   :on-change-text (fn [value]
+                                     (let [_ (println "name is:" value @name-of-asset)])
+                                     (reset! name-of-asset value)
+                                     (r/flush)))]
+     [input (assoc textinput-props
+                   :placeholder "price. fails unless you type [0-9]*"
+                   :on-change-text (fn [value]
+                                     (let [_ (println "price is" value @price-of-asset)])
+                                     (reset! price-of-asset value)
+                                     (r/flush)))]
      [touchable-highlight {:on-press #(dispatch [:nav/reset route-name])
                            :style    (style :button)}
       [text {:style (style :button-text)} "back to index"]]
