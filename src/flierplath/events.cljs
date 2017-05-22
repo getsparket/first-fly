@@ -45,12 +45,12 @@
 
 (defn insert-asset [the-db new-val]
   (let [the-people (:fin/stuff the-db)
-        inty-new-val (assoc new-val :fin.stuff/asset (cljs.reader/read-string (:fin.stuff/asset new-val)))]
+        inty-new-val (assoc new-val :fin.stuff/amount (cljs.reader/read-string (:fin.stuff/amount new-val)) :fin.stuff/i-rate 0.07 :fin.stuff/payment 500)]
     (assoc-in the-db [:fin/stuff] (conj the-people inty-new-val))))
 
 (defn insert-liab [the-db new-val]
   (let [the-people (:fin/stuff the-db)
-        inty-new-val (assoc new-val :fin.stuff/liab (cljs.reader/read-string (:fin.stuff/liab new-val)))]
+        inty-new-val (assoc new-val :fin.stuff/amount (cljs.reader/read-string (:fin.stuff/amount new-val)) :fin.stuff/i-rate 0.07 :fin.stuff/payment 500)]
     (assoc-in the-db [:fin/stuff] (conj the-people inty-new-val))))
 
 (reg-event-db

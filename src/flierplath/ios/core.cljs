@@ -82,9 +82,9 @@
 
 (def name-of-liab (reagent.ratom/atom ""))
 (def price-of-liab (reagent.ratom/atom ""))
+
 (defn liabs [props]
   (let [name (-> props (get "params") (get "name"))
-        list-of-liabs (subscribe [:list-liabs])
         route-name "Index"]
     [view {:style (:page style)}
      [view {:style {:background-color "rgba(256,256,256,0.5)"
@@ -104,16 +104,15 @@
      [touchable-highlight {:on-press #(dispatch [:nav/reset route-name])
                            :style    (style :button)}
       [text {:style (style :button-text)} "back to index"]]
-     [touchable-highlight {:on-press #(dispatch [:add-liab {:fin.stuff/name @name-of-liab :fin.stuff/liab @price-of-liab}])
+     [touchable-highlight {:on-press #(dispatch [:add-liab {:fin.stuff/name @name-of-liab :fin.stuff/amount @price-of-liab}])
                            :style    (style :button)}
       [text {:style (style :button-text)} "add to db"]]
-     [view [text "liabilities: " @list-of-liabs]]]))
+     [view [text "liabilities: "  @(subscribe [:list-liabs])]]]))
 
 (def name-of-asset (reagent.ratom/atom ""))
 (def price-of-asset (reagent.ratom/atom ""))
 (defn assets [props]
   (let [name (-> props (get "params") (get "name"))
-        list-of-assets (subscribe [:list-assets])
         route-name "Index"]
     [view {:style (:page style)}
      [view {:style {:background-color "rgba(256,256,256,0.5)"
@@ -134,10 +133,10 @@
      [touchable-highlight {:on-press #(dispatch [:nav/reset route-name])
                            :style    (style :button)}
       [text {:style (style :button-text)} "back to index"]]
-     [touchable-highlight {:on-press #(dispatch [:add-asset {:fin.stuff/name @name-of-asset :fin.stuff/asset @price-of-asset}])
+     [touchable-highlight {:on-press #(dispatch [:add-asset {:fin.stuff/name @name-of-asset :fin.stuff/amount @price-of-asset}])
                            :style    (style :button)}
       [text {:style (style :button-text)} "add to db"]]
-     [view [text "assets:  " @list-of-assets]]]))
+     [view [text "assets:  " @(subscribe [:list-assets])]]]))
 
 (defn settings []
   [view {:style {:flex 1
