@@ -1,4 +1,4 @@
-(ns flierplath.finance)
+(ns flierplath.twofinance)
 
 (defn get-expenses [{:keys [loans consumables] :as b}]
   (reduce + (concat (map :payment loans) (map :payment consumables))))
@@ -11,12 +11,12 @@
         monthly-expenses (/ (reduce + (concat (map :payment loans) (map :payment consumables))) 12)] ;; TODO calculate cash income
     (- monthly-income monthly-expenses)))
 
-(defn adv [{:keys [amount interest] :as m}]
-  (assoc m :amount (* amount (+ 1 (/ interest 12)))))
+(defn apply-interest-rates [{:keys [:fin.stuff/amount :fin.stuff/i-rate]:as m}]
+  (assoc m :fin.stuff/amount (* amount (+ 1 (/ i-rate 12)))))
 
 (defn advance-good [{:keys [cash assets] :as good} surplus]
-  (let [n-assets (map adv assets)
-        n-cash (adv (assoc cash :amount (+ surplus (:amount cash))))]
+  (let [n-assets (map apply-interest-rates assets)
+        n-cash (apply-interest-rates (assoc cash :amount (+ surplus (:amount cash))))]
     (assoc good :assets n-assets :cash n-cash)))
 
 (defn apply-payments [{:keys [amount payment] :as loan}]
@@ -29,14 +29,43 @@
 (defn advance-bad [{:keys [loans] :as bad}]
   (let [with-payments (map apply-payments loans)
         without-paid (remove-paid-off with-payments)
-        n-loans (map adv without-paid)]
+        n-loans (map apply-interest-rates without-paid)]
     (assoc bad :loans n-loans)))
 
-(defn advance-a-month [[g b]]
+#_(defn advance-a-month [[g b]]
   (let [surplus (calculate-surplus g b)
         n-good (advance-good g surplus)
         n-bad (advance-bad b)]
     [n-good n-bad]))
+
+
+
+
+(defn get-months-costs [finstuff]
+  (let [yearly (reduce + (remove nil? (map :fin.stuff/cost finstuff)))
+        monthly (/ yearly 12)]
+    monthly))
+
+(defn get-months-loan-payments [finstuff]
+  (let [yearly (-  (reduce + (remove nil? (map :fin.stuff/paying-off finstuff))))
+        monthly (/ yearly 12)]
+    monthly))
+
+(defn get-months-income [finstuff]
+  (let [yearly (reduce + (remove nil? (map :fin.stuff/payment finstuff)))
+        monthly (/ yearly 12)]
+    monthly))
+
+(defn get-surplus [finstuff]
+  (let [expenses (+ (get-months-costs finstuff) (get-months-loan-payments finstuff))
+        income (get-months-income finstuff)]
+    (+ income expenses))) ;; have to add b/c expenses are negative. 
+
+(defn advance-a-month [finstuff]
+  (let [with-interests (apply-interest-rates finstuff)
+        surplus (get-surplus with-interests)
+        n-finstuff (apply-surplus-to-cash )
+        ]))
 
 (defn apply-special-to-good [{:keys [cash] :as g} {:keys [amount] :or {amount 0} :as thing}]
   (let [n-cash (assoc cash :amount (+ (:amount cash) amount))]

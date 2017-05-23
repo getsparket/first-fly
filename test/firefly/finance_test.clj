@@ -32,5 +32,5 @@
 
 (deftest when-retire?
   (testing "all the math is roughly right"
-    (let [months-to-retiring (count (take-while #(< (get-net-worth (first %)) (* 25 (get-expenses (second %)))) (with-specials special-months [good bad])))]
+    (let [months-to-retiring (count (take-while #(< (get-net-worth (first %)) (* 25 (get-expenses (second %)))) (fi special-months [good bad])))]
       (is (= months-to-retiring 55)))))

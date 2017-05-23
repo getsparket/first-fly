@@ -1,5 +1,6 @@
 (ns flierplath.subs
-  (:require [re-frame.core :refer [reg-sub]]))
+  (:require [re-frame.core :refer [reg-sub]]
+            [flierplath.finance :as f]))
 
 (reg-sub
   :nav/tab-state
@@ -18,9 +19,16 @@
    (get-in db [:fin/stuff :fin.stuff/asset])))
 
 (reg-sub
- :list-stuff
+ :get-stuff
  (fn [db _]
    (:fin/stuff db)))
+
+(reg-sub
+ :compute-fi
+ (fn [_ _] ;; https://github.com/Day8/re-frame/blob/master/docs/SubscriptionInfographic.md
+   (subscribe [:get-stuff]))
+ (fn [stuff _]
+   (f/fi stuff)))
 
 (reg-sub
  :list-liabs
