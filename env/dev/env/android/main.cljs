@@ -6,7 +6,7 @@
  (enable-console-print!)
 
 (def cnt (r/atom 0))
-(defn reloader [] @cnt [core/app-root])
+(defn reloader [] @cnt [core/start])
 (def root-el (r/as-element [reloader]))
 
 (figwheel/watch-and-reload
