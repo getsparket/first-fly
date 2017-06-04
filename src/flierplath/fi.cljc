@@ -1,4 +1,4 @@
-(ns flierplath.twofinance)
+(ns flierplath.fi)
 
 (defn get-expenses [{:keys [loans consumables] :as b}]
   (reduce + (concat (map :payment loans) (map :payment consumables))))
@@ -32,44 +32,34 @@
         n-loans (map apply-interest-rates without-paid)]
     (assoc bad :loans n-loans)))
 
-#_(defn advance-a-month [[g b]]
-  (let [surplus (calculate-surplus g b)
-        n-good (advance-good g surplus)
-        n-bad (advance-bad b)]
-    [n-good n-bad]))
 
+(defn add-up-vals [k data]
+  (make-monthly (reduce + (remove nil? (map k data)))))
 
-
+(defn make-monthly [val]
+  (/ val 12))
 
 (defn get-months-costs [finstuff]
-  (let [yearly (reduce + (remove nil? (map :fin.stuff/cost finstuff)))
-        monthly (/ yearly 12)]
-    monthly))
+  (add-up-vals :cost finstuff))
 
 (defn get-months-loan-payments [finstuff]
-  (let [yearly (-  (reduce + (remove nil? (map :fin.stuff/paying-off finstuff))))
-        monthly (/ yearly 12)]
-    monthly))
+  (- (add-up-vals :paying-off finstuff)))
 
 (defn get-months-income [finstuff]
-  (let [yearly (reduce + (remove nil? (map :fin.stuff/payment finstuff)))
-        monthly (/ yearly 12)]
-    monthly))
+  (add-up-vals :payment finstuff))
 
 (defn get-surplus [finstuff]
   (let [expenses (+ (get-months-costs finstuff) (get-months-loan-payments finstuff))
         income (get-months-income finstuff)]
-    (+ income expenses))) ;; have to add b/c expenses are negative. 
+    (+ income expenses))) ;; have to add b/c expenses are negative.
 
-(defn advance-a-month [finstuff]
-  (let [with-interests (apply-interest-rates finstuff)
-        surplus (get-surplus with-interests)
-        n-finstuff (apply-surplus-to-cash )
-        ]))
+;; http://benashford.github.io/blog/2014/12/27/group-by-and-transducers/
+;; https://stackoverflow.com/a/25481057
+#_(reduce (fn [aggr {:keys [name] :as row}]
+          (update-in aggr
+                     [name]
+                     (fnil conj [])
+                     (dissoc row :name)))
+        {} #_exmpale-data)
 
-(defn apply-special-to-good [{:keys [cash] :as g} {:keys [amount] :or {amount 0} :as thing}]
-  (let [n-cash (assoc cash :amount (+ (:amount cash) amount))]
-    (assoc-in g [:cash] n-cash)))
 
-(defn fi [s [g b]]
-  (cons [g b] (lazy-seq (with-specials (rest s) (advance-a-month [(apply-special-to-good g (first s)) b])))))
