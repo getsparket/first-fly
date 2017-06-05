@@ -13,8 +13,12 @@
 
 (deftest can-do-existing-shit
   (testing "monthly costs"
-    (is (= -900 (f/get-months-costs finstuff))))
+    (is (= -900 (f/months-costs finstuff))))
   (testing "monthly income"
-    (is (= 14000/3 (f/get-months-income finstuff))))
+    (is (= 14000/3 (f/months-income finstuff))))
   (testing "monthly loan payments"
-    (is (= -1500 (f/get-months-loan-payments finstuff)))))
+    (is (= -1500 (f/months-loan-payments finstuff))))
+  (testing "net worth"
+    (is (= 35000 (f/net-worth finstuff))))
+  (testing "surplus?"
+    (is (= 8300/3 (f/surplus surp)))))
