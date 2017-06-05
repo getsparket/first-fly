@@ -1,10 +1,6 @@
 (ns flierplath.fi)
 
-(defn get-expenses [{:keys [loans consumables] :as b}]
-  (reduce + (concat (map :payment loans) (map :payment consumables))))
 
-(defn get-net-worth [{:keys [cash assets] :as g}]
-  (reduce + (cons (:amount cash) (map :amount assets))))
 
 (defn calculate-surplus [{:keys [incomes cash] :as g} {:keys [loans consumables] :as b}]
   (let [monthly-income (/ (reduce + (map :income incomes)) 12)
@@ -32,34 +28,28 @@
         n-loans (map apply-interest-rates without-paid)]
     (assoc bad :loans n-loans)))
 
+;;; accessors
 
-(defn add-up-vals [k data]
+(defn calc-monthly-val [k data]
   (make-monthly (reduce + (remove nil? (map k data)))))
 
 (defn make-monthly [val]
   (/ val 12))
 
-(defn get-months-costs [finstuff]
-  (add-up-vals :cost finstuff))
+(defn months-costs [finstuff]
+  (calc-monthly-val :cost finstuff))
 
-(defn get-months-loan-payments [finstuff]
-  (- (add-up-vals :paying-off finstuff)))
+(defn months-loan-payments [finstuff]
+  (- (calc-monthly-val :paying-off finstuff)))
 
-(defn get-months-income [finstuff]
-  (add-up-vals :payment finstuff))
+(defn months-income [finstuff]
+  (calc-monthly-val :payment finstuff))
 
-(defn get-surplus [finstuff]
-  (let [expenses (+ (get-months-costs finstuff) (get-months-loan-payments finstuff))
-        income (get-months-income finstuff)]
+(defn net-worth [finstuff]
+  (reduce + (map :amount finstuff)))
+
+(defn surplus [finstuff]
+  (let [expenses (+ (months-costs finstuff) (months-loan-payments finstuff))
+        income (months-income finstuff)]
     (+ income expenses))) ;; have to add b/c expenses are negative.
-
-;; http://benashford.github.io/blog/2014/12/27/group-by-and-transducers/
-;; https://stackoverflow.com/a/25481057
-#_(reduce (fn [aggr {:keys [name] :as row}]
-          (update-in aggr
-                     [name]
-                     (fnil conj [])
-                     (dissoc row :name)))
-        {} #_exmpale-data)
-
 
