@@ -1,10 +1,22 @@
 (ns flierplath.fi-test
   (:require [clojure.test :refer :all]
+            [flierplath.util :refer :all]
             [clj-time.core :as time]
             [clj-time.local :as local]
             [flierplath.db :as db]
             ;; [flierplath.finance :as f]
-            [flierplath.fi :as f]))
+            [flierplath.fi :refer :all]))
+
+(def surp
+  [{:name "car-loan" :amount -20000 :i-rate 0.07 :paying-off 6000 :delete-if-empty true :surplus nil} ;; counterintuitive: a loan is defined by
+   {:name "school-loan" :amount -50000 :i-rate 0.04 :paying-off 12000 :delete-if-empty true :surplus nil} ;; a negative balance
+   {:name "cash" :amount 5000 :i-rate 0.07 :payment 50000 :delete-if-empty false :surplus "cash"}
+   {:name "rental-income" :amount 0 :i-rate 0.07 :payment 6000 :delete-if-empty false :surplus "cash"}
+   {:name "vanguard" :amount 1000 :i-rate 0.07 :payment 6000 :delete-if-empty false :surplus "vanguard"}
+   {:name "house" :amount 100000 :i-rate 0.07 :payment 0 :delete-if-empty false :surplus "house"}
+   {:name "groceries" :amount 0 :i-rate 0 :cost -7200 :delete-if-empty false :surplus nil} ;; counterintuitive: should payment be pos or neg?
+   {:name "clothing" :amount 0 :i-rate 0 :cost -2400 :delete-if-empty false :surplus nil}
+   {:name "electric bil" :amount 0 :i-rate 0 :cost -1200 :delete-if-empty false :surplus nil}])
 
 (def finstuff (:fin/stuff db/app-db))
 
@@ -23,47 +35,34 @@
   (testing "surplus?"
     (is (= 8300/3 (f/surplus surp)))))
 
-(deftest can-move-payments-around
-  (testing "no expenses, cash and rental move to cash."
-    (let [f  [{:name "cash" :amount 5000 :payment 50000 :surplus "cash"}
-                    {:name "rental-income" :amount 0 :payment 6000 :surplus "cash"}
-                    {:name "vanguard" :amount 1000 :payment 6000 :surplus "vanguard"}
-              {:name "house" :amount 100000 :payment 0 :surplus "house"}]
-          done [{:name "cash", :amount 5000, :payment 50000, :surplus "cash", :newamount 12500/3} {:name "cash", :amount 5000, :payment 50000, :surplus "cash", :newamount 500} {:name "vanguard", :amount 1000, :payment 6000, :surplus "vanguard", :newamount 500} {:name "house", :amount 100000, :payment 0, :surplus "house", :newamount 0}]]
-      (is (= done (payments->newamounts f)))))
-  (testing ""))
-
-(deftest can-test-surplus-application
+(deftest can-test-surplus-applying-no-expenses
   (testing "can redirect some money made"
     (let [no-expenses [{:name "cash" :amount 5000 :i-rate 0.07 :payment 50000 :delete-if-empty false :surplus "cash"}
                        {:name "rental-income" :amount 0 :i-rate 0.07 :payment 6000 :delete-if-empty false :surplus "cash"}
                        {:name "vanguard" :amount 1000 :i-rate 0.07 :payment 6000 :delete-if-empty false :surplus "vanguard"}
                        {:name "house" :amount 100000 :i-rate 0.07 :payment 0 :delete-if-empty false :surplus "house"}]
-          after-a-month [{:name "cash" :amount 29000/3 :i-rate 0.07 :payment 50000 :delete-if-empty false :surplus "cash"} 
+          just-added (->> no-expenses
+                          payments->newamounts
+                          (group-by-better :name :newamount)
+                          (map (fn [[k v]] {k (reduce + v)})))
+          works? (surpluses->updated no-expenses just-added)
+          after-a-month [{:name "cash" :amount 29000/3 :i-rate 0.07 :payment 50000 :delete-if-empty false :surplus "cash"}
                          {:name "rental-income" :amount 0 :i-rate 0.07 :payment 6000 :delete-if-empty false :surplus "cash"}
                          {:name "vanguard" :amount 1500 :i-rate 0.07 :payment 6000 :delete-if-empty false :surplus "vanguard"}
-                         {:name "house" :amount 100000 :i-rate 0.07 :payment 0 :delete-if-empty false :surplus "house"}]])
-    #_(is (= #_(do-thing no-expenses) after-a-month))))
+                         {:name "house" :amount 100000 :i-rate 0.07 :payment 0 :delete-if-empty false :surplus "house"}]]
+      (is (= (into #{} works?) (into #{} after-a-month)))
+      (is (= (into #{} (update-months-surpluses no-expenses)) (into #{} after-a-month))))
+    (testing "utility function can do what it says"
+      (let [all [{:name "cash" :amount 5000 :i-rate 0.07 :payment 50000 :delete-if-empty false :surplus "cash"}
+                 {:name "rental-income" :amount 0 :i-rate 0.07 :payment 6000 :delete-if-empty false :surplus "cash"}
+                 {:name "vanguard" :amount 1000 :i-rate 0.07 :payment 6000 :delete-if-empty false :surplus "vanguard"}
+                 {:name "house" :amount 100000 :i-rate 0.07 :payment 0 :delete-if-empty false :surplus "house"}]
+            pass [{:name "cash" :amount 5000 :i-rate 0.07 :payment 50000 :delete-if-empty false :surplus "cash"}
+                  {:name "house" :amount 100000 :i-rate 0.07 :payment 0 :delete-if-empty false :surplus "house"}]]
+        (is (= (rm-matching-maps all :name ["rental-income" "vanguard"]) pass))))))
 
-(defn payments->newamounts [u]
-    (let [kd (group-by :surplus u)
-          nd (group-by :name u)
-          with-new-amounts (filter #(contains? % :newamount) (flatten (map vals (for [x u]
-                                                                 (let [p    (/ (:payment x) 12)
-                                                                       dest (:surplus x)]
-                                                                   (assoc-in nd [dest 0 :newamount] p))))))
-          ]
-      with-new-amounts))
+(deftest can-test-surpluses-with-expenses
+  (testing "oh my god"))
+;; real dates
+;; cljs-time
 
-(defn update-map [{:keys [amount payment surplus-amount] :as bals} expenses]
-
-  (merge bals {:amount (+ amount surplus-amount)
-           :payment payment
-           }))
-
-(defn update-one-time [m expenses]
-  [(update-map m expenses) (- expenses 1000)])
-
-(defn default-map [f]
-  (let [default (map #(assoc % :surplus-amount ((fnil / 0) (:payment %) 12)) f)]
-    (reverse (sort-by :surplus-amount default))))
