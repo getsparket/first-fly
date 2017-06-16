@@ -1,5 +1,6 @@
 (ns flierplath.fi
-  (:require [flierplath.util :refer :all]))
+  (:require [flierplath.util :refer :all]
+            [clj-time.core :as time]))
 
 (defn calculate-surplus [{:keys [incomes cash] :as g} {:keys [loans consumables] :as b}]
   (let [monthly-income (/ (reduce + (map :income incomes)) 12)
@@ -60,14 +61,9 @@
               (let [payment  (make-monthly (:payment x))]
                 (assoc-in f []))))))
 
-(def f [{:name "cash" :amount 5000 :i-rate 0.07 :payment 50000 :delete-if-empty false :surplus "cash"}
-        {:name "rental-income" :amount 0 :i-rate 0.07 :payment 6000 :delete-if-empty false :surplus "cash"}
-        {:name "vanguard" :amount 1000 :i-rate 0.07 :payment 6000 :delete-if-empty false :surplus "vanguard"}
-        {:name "house" :amount 100000 :i-rate 0.07 :payment 0 :delete-if-empty false :surplus "house"}])
-
 (defn surpluses->updated [vm l]
   (let [updated-ones (for [x l]
-                       (update (vec-map->map vm :name (first (map key x))) :amount + (first (map val x))))
+                       (update (select-map vm :name (first (map key x))) :amount + (first (map val x))))
         non-updated-ones (rm-matching-maps vm :name (keys (group-by :name updated-ones)))]
     (concat updated-ones non-updated-ones)))
 
@@ -104,3 +100,17 @@
        (map (fn [[k v]] {k (reduce + v)}))
        (surpluses->updated vm)))
 
+;; given a date, give the things that should be updated.
+(defn vm->date->vm [vm date]
+  (let []))
+
+(defn ms-to-be-changed [vm date]
+  (into [] (flatten (vals (into {} (filter #(time/before? (key %) date) (dissoc (group-by :cont-counter vm) nil)))))))
+
+(defn ms-to-stay-the-same [vm date]
+  (into [] (flatten (vals (into {} (filter (complement #(time/before? (key %) date)) (clojure.set/rename-keys (group-by :cont-counter vm) {nil (time/date-time 2018)}))))))) ;; don't forget nils. 2018 is a magic number.
+
+(defn rm-matching-maps
+  "given a vector of maps, a key and a seq of values, remove matching maps"
+  [vm k seq-of-values]
+  (remove #(.contains seq-of-values (get % k)) vm)) ;; remove elements of the list that have both key and value

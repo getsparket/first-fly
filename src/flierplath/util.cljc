@@ -1,4 +1,5 @@
-(ns flierplath.util)
+(ns flierplath.util
+  (require [clj-time.core :as time]))
 
 (defn group-by-better [key-f val-f data]
   (reduce (fn [m d]
@@ -13,11 +14,19 @@
   (fn [m]
     (= value (m key))))
 
-(defn vec-map->map [b k v]
-  (let [by-key (group-by k b)]
+(defn select-map
+  "given a vector of maps, a key, and a value, return a map"
+  [vm k v]
+  (let [by-key (group-by k vm)]
     (nth (get by-key v) 0)))
 
-(defn rm-matching-maps
-  "given a vector of maps, a key and a seq of values, remove matching maps"
-  [vm k seq-of-values]
-  (remove #(.contains seq-of-values (get % k) ) vm)) ;; remove elements of the list that have both key and value
+(defn select-maps
+  "given a vector of maps, a key, and a value, return a list of maps"
+  [vm k v]
+  (let [by-key (group-by k vm)]
+    (get by-key v)))
+
+(defn vm->ms-from-pred [vm pred k]
+  (let [by-key (group-by k vm)]
+    (conj (map pred by-key))))
+

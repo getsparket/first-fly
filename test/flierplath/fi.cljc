@@ -25,15 +25,15 @@
 
 (deftest can-do-existing-shit
   (testing "monthly costs"
-    (is (= -900 (f/months-costs finstuff))))
+    (is (= -900 (months-costs finstuff))))
   (testing "monthly income"
-    (is (= 14000/3 (f/months-income finstuff))))
+    (is (= 14000/3 (months-income finstuff))))
   (testing "monthly loan payments"
-    (is (= -1500 (f/months-loan-payments finstuff))))
+    (is (= -1500 (months-loan-payments finstuff))))
   (testing "net worth"
-    (is (= 35000 (f/net-worth finstuff))))
+    (is (= 35000 (net-worth finstuff))))
   (testing "surplus?"
-    (is (= 8300/3 (f/surplus surp)))))
+    (is (= 8300/3 (surplus surp)))))
 
 (deftest can-test-surplus-applying-no-expenses
   (testing "can redirect some money made"
@@ -61,8 +61,27 @@
                   {:name "house" :amount 100000 :i-rate 0.07 :payment 0 :delete-if-empty false :surplus "house"}]]
         (is (= (rm-matching-maps all :name ["rental-income" "vanguard"]) pass))))))
 
-(deftest can-test-surpluses-with-expenses
-  (testing "oh my god"))
-;; real dates
-;; cljs-time
+(deftest can-test-surpluses-with-dates
+  (testing "the day is now 6/13. what should happen?"
+    (let [with-times  [{:name "cash" :amount 5000 :i-rate 0.07 :payment 12500/3 :delete-if-empty false :surplus "cash"
+                        :cont-period (fn [date] (time/plus date (time/months 1))) :start (time/date-time 2017 6 1) :cont-counter (time/date-time 2017 6 13)}
+                       {:name "rental-income" :amount 0 :i-rate 0.07 :payment 500 :delete-if-empty false :surplus "cash"
+                        :cont-period (fn [date] (time/plus date (time/months 1))):start (time/date-time 2017 6 1) :cont-counter (time/date-time 2017 6 15)}
+                       {:name "vanguard" :amount 1000 :i-rate 0.07 :payment 500 :delete-if-empty false :surplus "vanguard"
+                        :cont-period (fn [date] (time/plus date (time/months 1))):start (time/date-time 2017 6 1) :cont-counter (time/date-time 2017 6 13)}
+                       {:name "house" :amount 100000 :i-rate 0.07 :payment 0 :delete-if-empty false :surplus "house"
+                        :cont-period :none  :start (time/date-time 2017 6 1) :cont-counter :none}]
+          after-a-day [{:name "cash" :amount 5000 :i-rate 0.07 :payment 50000 :delete-if-empty false :surplus "cash"
+                        :cont-period (fn [date] (time/plus date (time/months 1))):start (time/date-time 2017 6 1) :cont-counter (time/plus (time/date-time 2017 6 13) (time/months 1))}
+                       {:name "rental-income" :amount 0 :i-rate 0.07 :payment 6000 :delete-if-empty false :surplus "cash"
+                        :cont-period (fn [date] (time/plus date (time/months 1))):start (time/date-time 2017 6 1) :cont-counter (time/date-time 2017 6 15)}
+                       {:name "vanguard" :amount 1000 :i-rate 0.07 :payment 6000 :delete-if-empty false :surplus "vanguard"
+                        :cont-period (fn [date] (time/plus date (time/months 1))):start (time/date-time 2017 6 1) :cont-counter (time/plus (time/date-time 2017 6 13) (time/days 1))}
+                       {:name "house" :amount 100000 :i-rate 0.07 :payment 0 :delete-if-empty false :surplus "house"
+                        :cont-period nil :start (time/date-time 2017 6 1) :cont-counter :none}]]
+      (is (= after-a-day (vm->date->vm with-times (time/date-time 2017 6 14))))))) ;; :cont-period :once for one-time events. cont-counter: magic value. start: the start date.
+
+
+;; (fn [date] (plus date (months 1)))
+
 
