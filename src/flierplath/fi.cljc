@@ -103,9 +103,10 @@
 (defn ms-to-stay-the-same [vm date]
   (into [] (flatten (vals (into {} (filter (complement #(time/before? (key %) date)) (clojure.set/rename-keys (group-by :cont-counter vm) {nil (time/date-time 2018)}))))))) ;; don't forget nils. 2018 is a magic number.
 
-(defn advance-day [vm date]
+(defn advance-day [[vm date]]
   (let [changed (update-date-counters (update-months-surpluses (ms-to-be-changed vm date)))
         unchanged (rm-matching-maps vm :name (map :name (vec (update-months-surpluses (ms-to-be-changed vm date)))))]
-    (concat changed unchanged)))
+    [(vec (concat changed unchanged)) (time/plus date (time/days 1 ))]))
 
-
+(defn lazy-loop-of-days [[vm date]]
+  (cons [vm date] (lazy-seq (lazy-loop-of-days (advance-day [vm date])))))
