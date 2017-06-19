@@ -1,7 +1,7 @@
 (ns user
-    (:use [figwheel-sidecar.repl-api :as ra]))
   (:use [figwheel-sidecar.repl-api :as ra]
         [clj-time.core :as time]
+        [flierplath.fi :refer :all]
         [flierplath.util :refer :all]
         [clojure.pprint :as pp]))
 ;; This namespace is loaded automatically by nREPL
