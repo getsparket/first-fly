@@ -1,6 +1,7 @@
 (ns flierplath.subs
   (:require [re-frame.core :refer [reg-sub]]
-            [flierplath.finance :as f]))
+            ;; [flierplath.finance :as f]
+            ))
 
 (reg-sub
   :nav/tab-state

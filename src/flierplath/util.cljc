@@ -30,3 +30,13 @@
   (let [by-key (group-by k vm)]
     (conj (map pred by-key))))
 
+
+(defn rm-matching-maps
+  "given a vector of maps, a key and a seq of values, remove matching maps"
+  [vm k seq-of-values]
+  (remove #(.contains seq-of-values (get % k)) vm)) ;; remove elements of the list that have both key and value
+
+(defn keep-matching-maps
+  "given a vector of maps, a key and a seq of values, remove matching maps"
+  [vm k seq-of-values]
+  (filter #(.contains seq-of-values (get % k)) vm)) ;; remove elements of the list that have both key and value

@@ -53,19 +53,13 @@
         income (months-income finstuff)]
     (+ income expenses))) ;; have to add b/c expenses are negative.
 
-(defn move-cash-around [f]
-  (let [keyed (group-by :surplus f)]
-    keyed
-    ()
-    (merge f (for [x f] ;; add payment / 12 of :payment  to keyed's surplus
-              (let [payment  (make-monthly (:payment x))]
-                (assoc-in f []))))))
-
 (defn surpluses->updated [vm l]
   (let [updated-ones (for [x l]
                        (update (select-map vm :name (first (map key x))) :amount + (first (map val x))))
         non-updated-ones (rm-matching-maps vm :name (keys (group-by :name updated-ones)))]
     (concat updated-ones non-updated-ones)))
+
+
 
 (defn payments->newamounts [u]
   (let [nd (group-by :name u)
@@ -100,9 +94,6 @@
        (map (fn [[k v]] {k (reduce + v)}))
        (surpluses->updated vm)))
 
-;; given a date, give the things that should be updated.
-(defn vm->date->vm [vm date]
-  (let []))
 (defn update-date-counters [vm]
   (map #(assoc % :cont-counter ((get % :cont-period) (get % :cont-counter))) vm))
 
@@ -112,10 +103,6 @@
 (defn ms-to-stay-the-same [vm date]
   (into [] (flatten (vals (into {} (filter (complement #(time/before? (key %) date)) (clojure.set/rename-keys (group-by :cont-counter vm) {nil (time/date-time 2018)}))))))) ;; don't forget nils. 2018 is a magic number.
 
-(defn rm-matching-maps
-  "given a vector of maps, a key and a seq of values, remove matching maps"
-  [vm k seq-of-values]
-  (remove #(.contains seq-of-values (get % k)) vm)) ;; remove elements of the list that have both key and value
 (defn advance-day [vm date]
   (let [changed (update-date-counters (update-months-surpluses (ms-to-be-changed vm date)))
         unchanged (rm-matching-maps vm :name (map :name (vec (update-months-surpluses (ms-to-be-changed vm date)))))]
