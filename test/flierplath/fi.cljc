@@ -4,7 +4,6 @@
             [clj-time.core :as time]
             [clj-time.local :as local]
             [flierplath.db :as db]
-            ;; [flierplath.finance :as f]
             [flierplath.fi :refer :all]))
 
 (def surp
@@ -63,25 +62,24 @@
 
 (deftest can-test-surpluses-with-dates
   (testing "the day is now 6/13. what should happen?"
-    (let [with-times  [{:name "cash" :amount 5000 :i-rate 0.07 :payment 12500/3 :delete-if-empty false :surplus "cash"
-                        :cont-period (fn [date] (time/plus date (time/months 1))) :start (time/date-time 2017 6 1) :cont-counter (time/date-time 2017 6 13)}
+    (let [monthly  (fn [date] (time/plus date (time/months 1)))
+
+          with-times  [{:name "cash" :amount 5000 :i-rate 0.07 :payment 5000 :delete-if-empty false :surplus "cash"
+                        :cont-period monthly :start (time/date-time 2017 6 1) :cont-counter (time/date-time 2017 6 13)}
                        {:name "rental-income" :amount 0 :i-rate 0.07 :payment 500 :delete-if-empty false :surplus "cash"
-                        :cont-period (fn [date] (time/plus date (time/months 1))):start (time/date-time 2017 6 1) :cont-counter (time/date-time 2017 6 15)}
+                        :cont-period monthly :start (time/date-time 2017 6 1) :cont-counter (time/date-time 2017 6 15)}
                        {:name "vanguard" :amount 1000 :i-rate 0.07 :payment 500 :delete-if-empty false :surplus "vanguard"
-                        :cont-period (fn [date] (time/plus date (time/months 1))):start (time/date-time 2017 6 1) :cont-counter (time/date-time 2017 6 13)}
+                        :cont-period monthly :start (time/date-time 2017 6 1) :cont-counter (time/date-time 2017 6 13)}
                        {:name "house" :amount 100000 :i-rate 0.07 :payment 0 :delete-if-empty false :surplus "house"
                         :cont-period :none  :start (time/date-time 2017 6 1) :cont-counter :none}]
-          after-a-day [{:name "cash" :amount 5000 :i-rate 0.07 :payment 50000 :delete-if-empty false :surplus "cash"
-                        :cont-period (fn [date] (time/plus date (time/months 1))):start (time/date-time 2017 6 1) :cont-counter (time/plus (time/date-time 2017 6 13) (time/months 1))}
-                       {:name "rental-income" :amount 0 :i-rate 0.07 :payment 6000 :delete-if-empty false :surplus "cash"
-                        :cont-period (fn [date] (time/plus date (time/months 1))):start (time/date-time 2017 6 1) :cont-counter (time/date-time 2017 6 15)}
-                       {:name "vanguard" :amount 1000 :i-rate 0.07 :payment 6000 :delete-if-empty false :surplus "vanguard"
-                        :cont-period (fn [date] (time/plus date (time/months 1))):start (time/date-time 2017 6 1) :cont-counter (time/plus (time/date-time 2017 6 13) (time/days 1))}
+          after-a-day [{:name "cash" :amount 16250/3 :i-rate 0.07 :payment 5000 :delete-if-empty false :surplus "cash"
+                        :cont-period monthly :start (time/date-time 2017 6 1) :cont-counter (time/plus (time/date-time 2017 6 13) (time/months 1))}
+                       {:name "rental-income" :amount 0 :i-rate 0.07 :payment 500 :delete-if-empty false :surplus "cash"
+                        :cont-period monthly :start (time/date-time 2017 6 1) :cont-counter (time/date-time 2017 6 15)}
+                       {:name "vanguard" :amount 1000 :i-rate 0.07 :payment 500 :delete-if-empty false :surplus "vanguard"
+                        :cont-period monthly :start (time/date-time 2017 6 1) :cont-counter (time/plus (time/date-time 2017 6 13) (time/days 1))}
                        {:name "house" :amount 100000 :i-rate 0.07 :payment 0 :delete-if-empty false :surplus "house"
-                        :cont-period nil :start (time/date-time 2017 6 1) :cont-counter :none}]]
-      (is (= after-a-day (vm->date->vm with-times (time/date-time 2017 6 14))))))) ;; :cont-period :once for one-time events. cont-counter: magic value. start: the start date.
-
-
-;; (fn [date] (plus date (months 1)))
-
+                        :cont-period :none :start (time/date-time 2017 6 1) :cont-counter :none}]]
+      (is (= (into #{} after-a-day) (into #{} (advance-day with-times (time/date-time 2017 6 14))))))))
+;; :cont-period :once for one-time events. cont-counter: magic value. start: the start date.
 
