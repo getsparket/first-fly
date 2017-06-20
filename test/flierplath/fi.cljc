@@ -83,3 +83,11 @@
       (is (= (into #{} after-a-day) (into #{} (advance-day with-times (time/date-time 2017 6 14))))))))
 ;; :cont-period :once for one-time events. cont-counter: magic value. start: the start date.
 
+(deftest npe
+  (testing "throws an NPE. shouldn't."
+    (let [data [{:name "cash" :amount 5000 :i-rate 0.07 :payment 5000 :delete-if-empty false :surplus "cash"
+                 :cont-period (fn [date] (time/plus date (time/months 1))) :start (time/date-time 2017 6 1) :cont-counter (time/date-time 2017 6 13)}
+                {:name "rental-income" :amount 0 :i-rate 0.07 :payment 500 :delete-if-empty false :surplus "cash"
+                 :cont-period (fn [date] (time/plus date (time/months 1))):start (time/date-time 2017 6 1) :cont-counter (time/date-time 2017 6 15)}]]
+      (is (= "cheese" (try (take 3 (flierplath.fi/lazy-loop-of-days [data (time/date-time 2017 06 15)]))
+                            (catch NullPointerException e (str "fuck"))))))))

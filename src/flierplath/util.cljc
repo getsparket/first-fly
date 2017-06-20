@@ -34,7 +34,8 @@
 (defn rm-matching-maps
   "given a vector of maps, a key and a seq of values, remove matching maps"
   [vm k seq-of-values]
-  (remove #(.contains seq-of-values (get % k)) vm)) ;; remove elements of the list that have both key and value
+  (let [fixed-seq (or seq-of-values ())] ;; hack to acount for nil seq.
+    (remove #(.contains fixed-seq (get % k)) vm ))) ;; remove elements of the list that have both key and value
 
 (defn keep-matching-maps
   "given a vector of maps, a key and a seq of values, remove matching maps"
