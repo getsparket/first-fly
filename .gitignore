@@ -5,6 +5,9 @@
 # emacs
 .#*
 
+# lein
+.lein-repl-history
+
 # Xcode
 #
 build/
