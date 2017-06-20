@@ -57,7 +57,7 @@
   (let [updated-ones (for [x l]
                        (update (select-map vm :name (first (map key x))) :amount + (first (map val x))))
         non-updated-ones (rm-matching-maps vm :name (keys (group-by :name updated-ones)))]
-    (concat updated-ones non-updated-ones)))
+    (vec (concat updated-ones non-updated-ones))))
 
 
 
@@ -98,15 +98,18 @@
   (map #(assoc % :cont-counter ((get % :cont-period) (get % :cont-counter))) vm))
 
 (defn ms-to-be-changed [vm date]
-  (into [] (flatten (vals (into {} (filter #(time/before? (if (= :none (key %)) (time/date-time 9999) (key %)) date) (dissoc (group-by :cont-counter vm) nil))))))) 
-
-(defn ms-to-stay-the-same [vm date]
-  (into [] (flatten (vals (into {} (filter (complement #(time/before? (key %) date)) (clojure.set/rename-keys (group-by :cont-counter vm) {nil (time/date-time 2018)}))))))) ;; don't forget nils. 2018 is a magic number.
+  (->> vm
+       (group-by :cont-counter)
+       (#(dissoc % :none))
+       (filter #(time/before? (key %) date))
+       vals
+       flatten
+       vec))
 
 (defn advance-day [[vm date]]
   (let [changed (update-date-counters (update-months-surpluses (ms-to-be-changed vm date)))
-        unchanged (rm-matching-maps vm :name (map :name (vec (update-months-surpluses (ms-to-be-changed vm date)))))]
-    [(vec (concat changed unchanged)) (time/plus date (time/days 1 ))]))
+        unchanged (rm-matching-maps vm :name (map :name changed))]
+    [(vec (concat changed unchanged)) (time/plus date (time/days 1))]))
 
 (defn lazy-loop-of-days [[vm date]]
   (cons [vm date] (lazy-seq (lazy-loop-of-days (advance-day [vm date])))))

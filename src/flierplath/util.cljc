@@ -41,3 +41,12 @@
   "given a vector of maps, a key and a seq of values, remove matching maps"
   [vm k seq-of-values]
   (filter #(.contains seq-of-values (get % k)) vm)) ;; remove elements of the list that have both key and value
+
+
+(defn get-net-worth [vmv]
+  (->> vmv
+       first
+       (map :amount)
+       (reduce +)
+       float
+       int))
