@@ -1,6 +1,7 @@
 (ns flierplath.fi
   (:require [flierplath.util :refer :all]
-            [clj-time.core :as time]))
+            [clj-time.core :as time]
+            [clj-time.periodic :as pt]))
 
 (defn calculate-surplus [{:keys [incomes cash] :as g} {:keys [loans consumables] :as b}]
   (let [monthly-income (/ (reduce + (map :income incomes)) 12)
@@ -113,3 +114,7 @@
 
 (defn lazy-loop-of-days [[vm date]]
   (cons [vm date] (lazy-seq (lazy-loop-of-days (advance-day [vm date])))))
+
+;; FIXME right now jan 31 + 2 months = march 28th. periodic-seq fixes this through .multipliedBy
+(defn date-fixer [date date-func]
+  (clojure.core/second (take 1 (pt/periodic-seq date date-func))))
