@@ -58,42 +58,25 @@
   (let [updated-ones (for [x l]
                        (update (select-map vm :name (first (map key x))) :amount + (first (map val x))))
         non-updated-ones (rm-matching-maps vm :name (keys (group-by :name updated-ones)))]
-    (vec (concat updated-ones non-updated-ones))))
+    (vec updated-ones)))
 
 
 
 (defn payments->newamounts [u]
-  (let [nd (group-by :name u)
-        with-new-amounts (filter #(contains? % :newamount) (flatten (map vals (for [x u]
-                                                                                (let [p    (/ (:payment x) 12)
-                                                                                      dest (:surplus x)]
-                                                                                  (assoc-in nd [dest 0 :newamount] p))))))
-        ]
+  (let [w (map #(assoc % :newamount 0) u)
+        nd (group-by :surplus w)
+        with-new-amounts (filter #(not (= (:newamount %) 0)) (flatten (map vals (for [x u]
+                                                                               (let [p    (:payment x)
+                                                                                     dest (:surplus x)]
+                                                                                 (update-in nd [dest 0 :newamount] + p))))))]
     with-new-amounts))
 
-(defn payments->surpluses [u]
-  (let [with-new-amounts (payments->newamounts u)
-        added-up (->> with-new-amounts
-                      (group-by-better :name :newamount)
-                      (map (fn [[k v]] {k (reduce + v)})))]))
-
-(defn newamounts->surpluses [u]
-  (let [list-of-surpluses (map #(->> u
-                                     (group-by :name)
-                                     ((fn [x] (get x %)))
-                                     (map :newamount)
-                                     (reduce +)) (vec (map :name u)))
-
-        added (map #(update % :amount + (:newamount %)) u)
-        dissocd (map #(dissoc % :newamount) added)]
-    (interleave (map :name u) list-of-surpluses)))
-
-(defn update-months-surpluses [vm]
+(defn update-days-surpluses [vm-orig vm]
   (->> vm
        payments->newamounts
-       (group-by-better :name :newamount)
+       (group-by-better :surplus :newamount)
        (map (fn [[k v]] {k (reduce + v)}))
-       (surpluses->updated vm)))
+       (surpluses->updated vm-orig ,,,))   )
 
 (defn update-date-counters [vm]
   (map #(assoc % :cont-counter ((get % :cont-period) (get % :cont-counter))) vm))
@@ -102,13 +85,14 @@
   (->> vm
        (group-by :cont-counter)
        (#(dissoc % :none))
+       (#(dissoc % nil)) ;; hack.
        (filter #(time/before? (key %) date))
        vals
        flatten
        vec))
 
 (defn advance-day [[vm date]]
-  (let [changed (update-date-counters (update-months-surpluses (ms-to-be-changed vm date)))
+  (let [changed (update-date-counters (update-days-surpluses vm (ms-to-be-changed vm date)))
         unchanged (rm-matching-maps vm :name (map :name changed))]
     [(vec (concat changed unchanged)) (time/plus date (time/days 1))]))
 
