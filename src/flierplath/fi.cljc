@@ -1,7 +1,7 @@
 (ns flierplath.fi
   (:require [flierplath.util :refer :all]
             [clj-time.core :as time]
-            [clj-time.periodic :as pt]))
+            [clj-time.periodic :as pt])
 
 (defn calculate-surplus [{:keys [incomes cash] :as g} {:keys [loans consumables] :as b}]
   (let [monthly-income (/ (reduce + (map :income incomes)) 12)
@@ -54,29 +54,31 @@
         income (months-income finstuff)]
     (+ income expenses))) ;; have to add b/c expenses are negative.
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;; for daily calculation
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defn surpluses->updated [vm l]
-  (let [updated-ones (for [x l]
+  (let [updated (for [x l]
                        (update (select-map vm :name (first (map key x))) :amount + (first (map val x))))
-        non-updated-ones (rm-matching-maps vm :name (keys (group-by :name updated-ones)))]
-    (vec updated-ones)))
-
-
+        non-updated (rm-matching-maps vm :name (keys (group-by :name updated)))]
+    (vec updated)))
 
 (defn payments->newamounts [u]
   (let [w (map #(assoc % :newamount 0) u)
-        nd (group-by :surplus w)
-        with-new-amounts (filter #(not (= (:newamount %) 0)) (flatten (map vals (for [x u]
-                                                                               (let [p    (:payment x)
-                                                                                     dest (:surplus x)]
-                                                                                 (update-in nd [dest 0 :newamount] + p))))))]
-    with-new-amounts))
+        nd (group-by :surplus w)]
+    (filter #(not (= (:newamount %) 0)) (flatten (map vals (for [x u]
+                                                             (let [p    (:payment x)
+                                                                   dest (:surplus x)]
+                                                               (update-in nd [dest 0 :newamount] + p))))))))
 
 (defn update-days-surpluses [vm-orig vm]
   (->> vm
        payments->newamounts
        (group-by-better :surplus :newamount)
        (map (fn [[k v]] {k (reduce + v)}))
-       (surpluses->updated vm-orig ,,,))   )
+       (surpluses->updated vm-orig ,,,)))
 
 (defn update-date-counters [vm]
   (map #(assoc % :cont-counter ((get % :cont-period) (get % :cont-counter))) vm))
