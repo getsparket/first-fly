@@ -93,10 +93,15 @@
        flatten
        vec))
 
+(defn apply-interests-to-amounts [vm]
+  (map (fn [m] (update m :amount #(* (+ 1 (/ (:i-rate m) 365)) %))) vm))
+
 (defn advance-day [[vm date]]
   (let [changed (update-date-counters (update-days-surpluses vm (ms-to-be-changed vm date)))
-        unchanged (rm-matching-maps vm :name (map :name changed))]
-    [(vec (concat changed unchanged)) (time/plus date (time/days 1))]))
+        unchanged (rm-matching-maps vm :name (map :name changed))
+        together (vec (concat changed unchanged))
+        with-interests (apply-interests-to-amounts together)]
+    [with-interests (time/plus date (time/days 1))]))
 
 (defn lazy-loop-of-days [[vm date]]
   (cons [vm date] (lazy-seq (lazy-loop-of-days (advance-day [vm date])))))
