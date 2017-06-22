@@ -59,6 +59,7 @@
                            :style    (style :button)}
       [text {:style (style :button-text)} "back to index"]]]))
 
+
 (defn resd [props]
   (let [number (-> props (get "params") (get "number"))
         route-name "Index"]
@@ -82,7 +83,6 @@
 
 (def name-of-liab (reagent.ratom/atom ""))
 (def price-of-liab (reagent.ratom/atom ""))
-
 (defn liabs [props]
   (let [name (-> props (get "params") (get "name"))
         route-name "Index"]
@@ -108,6 +108,7 @@
                            :style    (style :button)}
       [text {:style (style :button-text)} "add to db"]]
      [view [text "liabilities: "  @(subscribe [:list-liabs])]]]))
+
 
 (def name-of-asset (reagent.ratom/atom ""))
 (def price-of-asset (reagent.ratom/atom ""))
@@ -138,12 +139,12 @@
       [text {:style (style :button-text)} "add to db"]]
      [view [text "assets:  " @(subscribe [:list-assets])]]]))
 
+
 (defn settings []
   [view {:style {:flex 1
                  :justify-content "center"
                  :align-items "center"}}
    [text "SETTINGS"]])
-
 
 
 (defn app-root [{:keys [navigation]}]
@@ -201,18 +202,13 @@
 
 (def resd-comp (nav-wrapper resd #(str "Card "
                                        (aget % "state" "params" "number"))))
-
 (def db-state-comp (nav-wrapper db-state #(str "Card "
                                        (aget % "state" "params" "number"))))
-
 (def assets-comp (nav-wrapper assets #(str "Inserting assets screen "
                                        (aget % "state" "params" "number"))))
-
 (def liabs-comp (nav-wrapper liabs #(str "Inserting liabs screen "
                                            (aget % "state" "params" "number"))))
-
 (def settings-comp (nav-wrapper settings #(str "The Settings ")))
-
 (def app-root-comp (nav-wrapper app-root "Welcome"))
 
 (def stack-router {:Home {:screen app-root-comp}
@@ -225,6 +221,7 @@
 
 (def sn (r/adapt-react-class (stack-navigator (clj->js stack-router))))
 
+
 (defn card-start [] (let [nav-state (subscribe [:nav/stack-state "Index"])]
                       (fn []
                         (js/console.log @nav-state)
@@ -235,9 +232,9 @@
                                                             (dispatch [:nav/js [% "Index"]]))
                                               "state"    (clj->js @nav-state)}))}])))
 
+
 (def tab-router {:Index    {:screen (nav-wrapper card-start "Index")}
                  :Settings {:screen (nav-wrapper settings "Settings")}})
-
 
 
 (defn tab-navigator-inst []
@@ -260,10 +257,12 @@
                                                                #_(get-state %)))
     (r/adapt-react-class tni)))
 
+
 (defn start []
   (let [nav-state (subscribe [:nav/tab-state])]
     (fn []
       [tn])))
+
 
 (defn init []
   (dispatch-sync [:initialize-db])
