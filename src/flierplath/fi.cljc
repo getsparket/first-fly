@@ -71,6 +71,16 @@
                                                                    dest (:surplus x)]
                                                                (update-in nd [dest 0 :newamount] + p))))))))
 
+(defn ms-to-be-changed [vm date]
+  (->> vm
+       (group-by :cont-counter)
+       (#(dissoc % :none))
+       (#(dissoc % nil)) ;; hack.
+       (filter #(time/before? (key %) date))
+       vals
+       flatten
+       vec))
+
 (defn update-days-surpluses [vm-orig vm]
   (->> vm
        payments->newamounts
@@ -86,15 +96,6 @@
         unchanged (rm-matching-maps vm :name (map :name changed))]
     (vec (concat changed unchanged))))
 
-(defn ms-to-be-changed [vm date]
-  (->> vm
-       (group-by :cont-counter)
-       (#(dissoc % :none))
-       (#(dissoc % nil)) ;; hack.
-       (filter #(time/before? (key %) date))
-       vals
-       flatten
-       vec))
 
 (defn apply-interests-to-amounts [vm]
   (map (fn [m] (update m :amount #(* (+ 1 (/ (:i-rate m) 365)) %))) vm))
@@ -103,7 +104,7 @@
   (let [changed (update-days-surpluses vm (ms-to-be-changed vm date))
         unchanged (rm-matching-maps vm :name (map :name changed))
         together (vec (concat changed unchanged))
-        with-updated-dates (mourning together date)
+        with-updated-dates (update-dates-if-before together date)
         with-interests (apply-interests-to-amounts with-updated-dates)]
     [with-interests (time/plus date (time/days 1))]))
 
