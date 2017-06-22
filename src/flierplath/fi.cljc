@@ -83,6 +83,11 @@
 (defn update-date-counters [vm]
   (map #(assoc % :cont-counter ((get % :cont-period) (get % :cont-counter))) vm))
 
+(defn update-dates-if-before [vm date]
+  (let [changed (update-date-counters (ms-to-be-changed vm date))
+        unchanged (rm-matching-maps vm :name (map :name changed))]
+    (vec (concat changed unchanged))))
+
 (defn ms-to-be-changed [vm date]
   (->> vm
        (group-by :cont-counter)
@@ -97,10 +102,11 @@
   (map (fn [m] (update m :amount #(* (+ 1 (/ (:i-rate m) 365)) %))) vm))
 
 (defn advance-day [[vm date]]
-  (let [changed (update-date-counters (update-days-surpluses vm (ms-to-be-changed vm date)))
+  (let [changed (update-days-surpluses vm (ms-to-be-changed vm date))
         unchanged (rm-matching-maps vm :name (map :name changed))
         together (vec (concat changed unchanged))
-        with-interests (apply-interests-to-amounts together)]
+        with-updated-dates (mourning together date)
+        with-interests (apply-interests-to-amounts with-updated-dates)]
     [with-interests (time/plus date (time/days 1))]))
 
 (defn lazy-loop-of-days [[vm date]]
