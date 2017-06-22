@@ -60,10 +60,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn surpluses->updated [vm l]
-  (let [updated (for [x l]
-                       (update (select-map vm :name (first (map key x))) :amount + (first (map val x))))
-        non-updated (rm-matching-maps vm :name (keys (group-by :name updated)))]
-    (vec updated)))
+  (for [x l]
+    (update (select-map vm :name (first (map key x))) :amount + (first (map val x)))))
 
 (defn payments->newamounts [u]
   (let [w (map #(assoc % :newamount 0) u)
