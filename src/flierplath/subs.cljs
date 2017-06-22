@@ -1,7 +1,5 @@
 (ns flierplath.subs
-  (:require [re-frame.core :refer [reg-sub]]
-            ;; [flierplath.finance :as f]
-            ))
+  (:require [re-frame.core :refer [reg-sub]]))
 
 (reg-sub
   :nav/tab-state
@@ -24,7 +22,7 @@
  (fn [db _]
    (:fin/stuff db)))
 
-(reg-sub
+#_(reg-sub
  :compute-fi
  (fn [_ _] ;; https://github.com/Day8/re-frame/blob/master/docs/SubscriptionInfographic.md
    (subscribe [:get-stuff]))

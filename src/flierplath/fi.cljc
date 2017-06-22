@@ -1,7 +1,10 @@
 (ns flierplath.fi
-  (:require [flierplath.util :refer :all]
-            [clj-time.core :as time]
-            [clj-time.periodic :as pt]))
+  (:require [flierplath.util :refer [has-value select-map rm-matching-maps get-net-worth group-by-better]]
+            #?(:clj [clj-time.core :as time]
+               :cljs [cljs-time.core :as time])
+
+            #?(:clj [clj-time.periodic :as pt]
+               :cljs [cljs-time.periodic :as pt] )))
 
 (defn calculate-surplus [{:keys [incomes cash] :as g} {:keys [loans consumables] :as b}]
   (let [monthly-income (/ (reduce + (map :income incomes)) 12)
