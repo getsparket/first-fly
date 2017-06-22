@@ -1,5 +1,6 @@
 (ns flierplath.db
-  (:require [clojure.spec :as s]))
+  (:require #?(:clj [clojure.spec :as s]
+               :cljs [cljs.spec.alpha :as s])))
 
 ;; spec of app-db
 ;; Fetched from: https://github.com/react-community/react-navigation/blob/c37ad8a0a924d13f3897bc72fbda52aac76904b6/src/TypeDefinition.js

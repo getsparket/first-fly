@@ -49,6 +49,7 @@
                       :returnKeyType "go"
                       })
 
+
 (defn db-state [props]
   (let [something (subscribe [:get-db-state])]
     [view {:style (:page style)}

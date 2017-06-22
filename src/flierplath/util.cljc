@@ -1,5 +1,4 @@
-(ns flierplath.util
-  (require [clj-time.core :as time]))
+(ns flierplath.util)
 
 (defn group-by-better [key-f val-f data]
   (reduce (fn [m d]

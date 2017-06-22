@@ -1,7 +1,7 @@
 (ns flierplath.events
   (:require
     [re-frame.core :refer [reg-event-db after reg-event-fx]]
-    [clojure.spec :as s]
+    [cljs.spec.alpha :as s]
     [flierplath.db :as db :refer [app-db]]))
 
 ;; -- Interceptors ------------------------------------------------------------
