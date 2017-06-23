@@ -29,17 +29,17 @@
   (let [by-key (group-by k vm)]
     (conj (map pred by-key))))
 
-
 (defn rm-matching-maps
   "given a vector of maps, a key and a seq of values, remove matching maps"
   [vm k seq-of-values]
-  (let [fixed-seq (or seq-of-values ())] ;; hack to acount for nil seq.
-    (remove #(.contains fixed-seq (get % k)) vm ))) ;; remove elements of the list that have both key and value
+  (let [fixed-seq (into #{} (or seq-of-values ()))]
+    (remove #(some fixed-seq [(k %)]) vm)))
 
 (defn keep-matching-maps
   "given a vector of maps, a key and a seq of values, remove matching maps"
   [vm k seq-of-values]
-  (filter #(.contains seq-of-values (get % k)) vm)) ;; remove elements of the list that have both key and value
+  (let [fixed-seq (into #{} (or seq-of-values ()))]
+    (filter #(some fixed-seq [(k %)]) vm)))
 
 
 (defn get-net-worth [vmv]
