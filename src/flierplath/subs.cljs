@@ -1,5 +1,8 @@
 (ns flierplath.subs
-  (:require [re-frame.core :refer [reg-sub]]))
+  (:require [re-frame.core :refer [reg-sub]]
+            [flierplath.fi :as fi]
+            [cljs-time.core :as time]
+            [cljs-time.coerce :as coerce]))
 
 (reg-sub
   :nav/tab-state
@@ -48,3 +51,13 @@
  :get-greeting
  (fn [db _]
    "static android text"))
+
+(reg-sub
+ :get-time-to-default-fi
+ (fn [db _]
+   (let [vm (:fin/stuff db)
+         _ (.log js/console vm)]
+     (str (->> (fi/lazy-loop-of-days [vm (time/date-time 2017 6 15)])
+               (take-while #(< (flierplath.util/get-net-worth %) 1000000))
+               last
+               second)))))

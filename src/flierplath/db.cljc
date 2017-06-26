@@ -1,6 +1,8 @@
 (ns flierplath.db
   (:require #?(:clj [clojure.spec :as s]
-               :cljs [cljs.spec.alpha :as s])))
+               :cljs [cljs.spec.alpha :as s])
+            #?(:clj [clj-time.core :as time]
+               :cljs [cljs-time.core :as time])))
 
 ;; spec of app-db
 ;; Fetched from: https://github.com/react-community/react-navigation/blob/c37ad8a0a924d13f3897bc72fbda52aac76904b6/src/TypeDefinition.js
@@ -34,12 +36,17 @@
              :nav/stack-state #:nav.routeName {:Index #:nav.state {:index  0
                                                                    :routes [#:nav.route {:key :Home :routeName :Home}]}}
              :fin/stuff
-             [{:name "car-loan" :amount -20000 :i-rate 0.07 :paying-off 6000 :delete-if-empty true :surplus nil} ;; counterintuitive: a loan is defined by
-              {:name "school-loan" :amount -50000 :i-rate 0.04 :paying-off 12000 :delete-if-empty true :surplus nil} ;; a negative balance
-              {:name "cash" :amount 5000 :i-rate 0.07 :payment 50000 :delete-if-empty false :surplus "cash"}
-              {:name "rental-income" :amount 0 :i-rate 0.07 :payment 6000 :delete-if-empty false :surplus "cash"}
-              {:name "house" :amount 100000 :i-rate 0.07 :payment 0 :delete-if-empty false :surplus "cash"}
-              {:name "groceries" :amount 0 :i-rate 0 :cost -7200 :delete-if-empty false :surplus nil} ;; counterintuitive: should payment be pos or neg?
-              {:name "clothing" :amount 0 :i-rate 0 :cost -2400 :delete-if-empty false :surplus nil}
-              {:name "electric bil" :amount 0 :i-rate 0 :cost -1200 :delete-if-empty false :surplus nil}]})
+             [{:name "cash" :amount 5000 :i-rate 0.07 :payment 5000 :delete-if-empty false :surplus "cash"
+                :cont-period (fn [date] (time/plus date (time/months 1))) :start (time/date-time 2017 6 1) :cont-counter (time/date-time 2017 6 13)}
+               {:name "rental-income" :amount 0 :i-rate 0.07 :payment 500 :delete-if-empty false :surplus "cash"
+                :cont-period (fn [date] (time/plus date (time/months 1))):start (time/date-time 2017 6 1) :cont-counter (time/date-time 2017 6 15)}
+               {:name "vanguard" :amount 1000 :i-rate 0.07 :payment 500 :delete-if-empty false :surplus "vanguard"
+                :cont-period (fn [date] (time/plus date (time/months 1))):start (time/date-time 2017 6 1) :cont-counter (time/date-time 2017 6 13)}
+               {:name "house" :amount 100000 :i-rate 0.07 :payment 0 :delete-if-empty false :surplus "house"
+                :cont-period :none  :start (time/date-time 2017 6 1) :cont-counter :none}
+               {:name "groceries" :amount 0 :i-rate 0 :payment -99 :delete-if-empty false :surplus "cash"
+                :cont-period (fn [date] (time/plus date (time/weeks 1)))  :start (time/date-time 2017 6 1) :cont-counter (time/date-time 2017 6 15)}
+               {:name "car breaks down" :amount 0 :i-rate 0 :payment -69420 :delete-if-empty false :surplus "cash"
+                :cont-period (fn [date] (time/plus date (time/years 9999)))  :start (time/date-time 2017 6 1) :cont-counter (time/date-time 2017 6 18)}
+               ]})
 

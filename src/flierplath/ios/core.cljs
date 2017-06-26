@@ -49,6 +49,15 @@
                       :returnKeyType "go"
                       })
 
+(defn default-fi [props]
+  (let [something (subscribe [:get-time-to-default-fi])]
+    [view {:style (:page style)}
+     [view {:style {:background-color "rgba(256,256,256,0.5)"
+                    :margin-bottom    20}}
+      [text {:style (style :title)} "you'll have a miliion dollars on this day" @something]]
+     [touchable-highlight {:on-press #(dispatch [:nav/reset "Index"])
+                           :style    (style :button)}
+      [text {:style (style :button-text)} "back to index"]]]))
 
 (defn db-state [props]
   (let [something (subscribe [:get-db-state])]
@@ -190,7 +199,15 @@
                                                     :routeName :DbState
                                                     :params    {:name "m"}}
                                        "Index"]])}
-    [text {:style (style :button-text)} "app state"]]])
+    [text {:style (style :button-text)} "app state"]]
+   [touchable-highlight {:style    (style :button)
+                         :on-press #(dispatch
+                                     [:nav/navigate
+                                      [#:nav.route {:key       :0
+                                                    :routeName :DefaultFi
+                                                    :params    {:name "m"}}
+                                       "Index"]])}
+    [text {:style (style :button-text)} "default fi"]]])
 
 
 (defn nav-wrapper [component title]
@@ -201,6 +218,8 @@
     comp))
 
 
+(def default-fi-comp (nav-wrapper default-fi #(str "Card "
+                                               (aget % "state" "params" "number"))))
 (def resd-comp (nav-wrapper resd #(str "Card "
                                        (aget % "state" "params" "number"))))
 (def db-state-comp (nav-wrapper db-state #(str "Card "
