@@ -233,6 +233,7 @@
 
 (def stack-router {:Home {:screen app-root-comp}
                    :Card {:screen resd-comp}
+                   :DefaultFi {:screen default-fi-comp}
                    :DbState {:screen db-state-comp}
                    :Assets {:screen assets-comp}
                    :Liabs {:screen liabs-comp}
