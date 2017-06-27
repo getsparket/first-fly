@@ -49,6 +49,16 @@
                       :returnKeyType "go"
                       })
 
+(defn default-fi [props]
+  (let [something (subscribe [:get-time-to-default-fi])]
+    [view {:style (:page style)}
+     [view {:style {:background-color "rgba(256,256,256,0.5)"
+                    :margin-bottom    20}}
+      [text {:style (style :title)} "you'll have a miliion dollars on this day" @something]]
+     [touchable-highlight {:on-press #(dispatch [:nav/reset "Index"])
+                           :style    (style :button)}
+      [text {:style (style :button-text)} "back to index"]]]))
+
 (defn db-state [props]
   (let [something (subscribe [:get-db-state])]
     [view {:style (:page style)}
@@ -58,6 +68,7 @@
      [touchable-highlight {:on-press #(dispatch [:nav/reset "Index"])
                            :style    (style :button)}
       [text {:style (style :button-text)} "back to index"]]]))
+
 
 (defn resd [props]
   (let [number (-> props (get "params") (get "number"))
@@ -84,7 +95,6 @@
 (def price-of-liab (reagent.ratom/atom ""))
 (defn liabs [props]
   (let [name (-> props (get "params") (get "name"))
-        list-of-liabs (subscribe [:list-liabs])
         route-name "Index"]
     [view {:style (:page style)}
      [view {:style {:background-color "rgba(256,256,256,0.5)"
@@ -104,16 +114,16 @@
      [touchable-highlight {:on-press #(dispatch [:nav/reset route-name])
                            :style    (style :button)}
       [text {:style (style :button-text)} "back to index"]]
-     [touchable-highlight {:on-press #(dispatch [:add-liab {:fin.stuff/name @name-of-liab :fin.stuff/liab @price-of-liab}])
+     [touchable-highlight {:on-press #(dispatch [:add-liab {:fin.stuff/name @name-of-liab :fin.stuff/amount @price-of-liab}])
                            :style    (style :button)}
       [text {:style (style :button-text)} "add to db"]]
-     [view [text "liabilities: " @list-of-liabs]]]))
+     [view [text "liabilities: "  @(subscribe [:list-liabs])]]]))
+
 
 (def name-of-asset (reagent.ratom/atom ""))
 (def price-of-asset (reagent.ratom/atom ""))
 (defn assets [props]
   (let [name (-> props (get "params") (get "name"))
-        list-of-assets (subscribe [:list-assets])
         route-name "Index"]
     [view {:style (:page style)}
      [view {:style {:background-color "rgba(256,256,256,0.5)"
@@ -134,17 +144,17 @@
      [touchable-highlight {:on-press #(dispatch [:nav/reset route-name])
                            :style    (style :button)}
       [text {:style (style :button-text)} "back to index"]]
-     [touchable-highlight {:on-press #(dispatch [:add-asset {:fin.stuff/name @name-of-asset :fin.stuff/asset @price-of-asset}])
+     [touchable-highlight {:on-press #(dispatch [:add-asset {:fin.stuff/name @name-of-asset :fin.stuff/amount @price-of-asset}])
                            :style    (style :button)}
       [text {:style (style :button-text)} "add to db"]]
-     [view [text "assets:  " @list-of-assets]]]))
+     [view [text "assets:  " @(subscribe [:list-assets])]]]))
+
 
 (defn settings []
   [view {:style {:flex 1
                  :justify-content "center"
                  :align-items "center"}}
    [text "SETTINGS"]])
-
 
 
 (defn app-root [{:keys [navigation]}]
@@ -189,7 +199,15 @@
                                                     :routeName :DbState
                                                     :params    {:name "m"}}
                                        "Index"]])}
-    [text {:style (style :button-text)} "app state"]]])
+    [text {:style (style :button-text)} "app state"]]
+   [touchable-highlight {:style    (style :button)
+                         :on-press #(dispatch
+                                     [:nav/navigate
+                                      [#:nav.route {:key       :0
+                                                    :routeName :DefaultFi
+                                                    :params    {:name "m"}}
+                                       "Index"]])}
+    [text {:style (style :button-text)} "default fi"]]])
 
 
 (defn nav-wrapper [component title]
@@ -200,24 +218,22 @@
     comp))
 
 
+(def default-fi-comp (nav-wrapper default-fi #(str "Card "
+                                               (aget % "state" "params" "number"))))
 (def resd-comp (nav-wrapper resd #(str "Card "
                                        (aget % "state" "params" "number"))))
-
 (def db-state-comp (nav-wrapper db-state #(str "Card "
                                        (aget % "state" "params" "number"))))
-
 (def assets-comp (nav-wrapper assets #(str "Inserting assets screen "
                                        (aget % "state" "params" "number"))))
-
 (def liabs-comp (nav-wrapper liabs #(str "Inserting liabs screen "
                                            (aget % "state" "params" "number"))))
-
 (def settings-comp (nav-wrapper settings #(str "The Settings ")))
-
 (def app-root-comp (nav-wrapper app-root "Welcome"))
 
 (def stack-router {:Home {:screen app-root-comp}
                    :Card {:screen resd-comp}
+                   :DefaultFi {:screen default-fi-comp}
                    :DbState {:screen db-state-comp}
                    :Assets {:screen assets-comp}
                    :Liabs {:screen liabs-comp}
@@ -225,6 +241,7 @@
 
 
 (def sn (r/adapt-react-class (stack-navigator (clj->js stack-router))))
+
 
 (defn card-start [] (let [nav-state (subscribe [:nav/stack-state "Index"])]
                       (fn []
@@ -236,9 +253,9 @@
                                                             (dispatch [:nav/js [% "Index"]]))
                                               "state"    (clj->js @nav-state)}))}])))
 
+
 (def tab-router {:Index    {:screen (nav-wrapper card-start "Index")}
                  :Settings {:screen (nav-wrapper settings "Settings")}})
-
 
 
 (defn tab-navigator-inst []
@@ -261,10 +278,12 @@
                                                                #_(get-state %)))
     (r/adapt-react-class tni)))
 
+
 (defn start []
   (let [nav-state (subscribe [:nav/tab-state])]
     (fn []
       [tn])))
+
 
 (defn init []
   (dispatch-sync [:initialize-db])

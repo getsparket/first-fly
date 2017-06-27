@@ -4,18 +4,20 @@
             :license {:name "Eclipse Public License"
                       :url  "http://www.eclipse.org/legal/epl-v10.html"}
             :dependencies [[org.clojure/clojure "1.9.0-alpha10"]
-                           [org.clojure/clojurescript "1.9.198"]
-                           [binaryage/devtools "0.9.0"]
-                           [reagent "0.6.0" :exclusions [cljsjs/react cljsjs/react-dom cljsjs/react-dom-server]]
+                           [org.clojure/clojurescript "1.9.562"]
+                           [com.andrewmcveigh/cljs-time "0.5.0"]
+                           [binaryage/devtools "0.9.4"]
+                           [reagent "0.6.2" :exclusions [cljsjs/react cljsjs/react-dom cljsjs/react-dom-server]]
 [re-frame "0.8.0"]]
-            :plugins [[lein-cljsbuild "1.1.4"]
-                      [lein-figwheel "0.5.8"]]
+            :plugins [[lein-cljsbuild "1.1.6"]
+                      [lein-figwheel "0.5.10"]]
             :clean-targets ["target/" "index.ios.js" "index.android.js"]
             :aliases {"prod-build" ^{:doc "Recompile code with prod profile."}
                                    ["do" "clean"
                                     ["with-profile" "prod" "cljsbuild" "once" ]]}
-            :profiles {:dev  {:dependencies [[figwheel-sidecar "0.5.8"]
-                                             [com.cemerick/piggieback "0.2.1"]]
+            :profiles {:dev  {:dependencies [[figwheel-sidecar "0.5.10"]
+                                             [com.cemerick/piggieback "0.2.2"]
+                                             [org.clojure/tools.nrepl "0.2.12"]]
                               :source-paths ["src" "env/dev"]
                               :cljsbuild    {:builds [{:id           "ios"
                                                        :source-paths ["src" "env/dev"]
